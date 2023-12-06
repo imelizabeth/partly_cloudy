@@ -3,7 +3,7 @@ Summary: Raw code for banded ridge regression analysis of Partly Cloudy fMRI dat
 
 Hi! This is the code that was used in our paper, "Early neural development of social perception: evidence from voxel-wise encoding in young children and adults" (Im, Shirahatti, Isik. preprint)
 
-To run this code, you will need to get the video stimulus from Richardson et al (2018), download tikreg and PyMoten packages from Gallant Lab Github (https://github.com/gallantlab).
+To run this code, you will need to get the video stimulus from Richardson et al (2018) and fMRI data from Hillary Richardson's open fMRI page, download tikreg and PyMoten packages from Gallant Lab Github (https://github.com/gallantlab).
 To run ROI analyses, you would also need to download the ROI masks we used: We used STS mask from Ben Deen's group (https://bendeen.com/data/) and MT from Sabine Kastner's group (https://napl.scholar.princeton.edu/resources)
 
 # How to use the code
