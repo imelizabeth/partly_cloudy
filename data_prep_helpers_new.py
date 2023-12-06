@@ -1,4 +1,3 @@
-
 ##### Imports
 
 # General package imports 
@@ -19,6 +18,7 @@ from brainiak.isc import isc, permutation_isc
 # Stats packages
 from statsmodels.stats.multitest import multipletests
 from sklearn import preprocessing 
+
 
 ###### Masking
 
@@ -51,7 +51,8 @@ def make_boolean_mask(mask):
 def make_vol(voxels, mask):
     """
         Helper function to turn a 2D array of voxels into a volume using meta-data from a NIFTI mask
-        returns NIFTI image of desired voxels.
+        returns NIFTI image of desired voxels. --> get all brain space but only the regions of interestwill have 
+        values
     """
 
     # Make a blank volume of the correct size
@@ -69,8 +70,8 @@ def make_vol(voxels, mask):
 
     return nifti_vol 
 
+
 ##### Loading and cleaning data
-  
 def clean_subject_data(subject, directory, save=False):
 
     """
@@ -102,6 +103,7 @@ def clean_subject_data(subject, directory, save=False):
 
     return func_clean
 
+
 def load_clean_data(subject_range, directory):
     """
         Loads previously cleaned data and returns it as an array.
@@ -115,6 +117,8 @@ def load_clean_data(subject_range, directory):
         clean_data.append(subject_data)
 
     return clean_data
+
+
 
 
 ##### ISC mask generation
@@ -207,44 +211,124 @@ def apply_isc_mask(bold_data, isc_thresholded, group_mask):
 
     return masked_data
 
-##### Trimming and normalization
-
-def trim_blank_trs(bold_data):
+def bool_mask_data(mask):
     """
-        Trims fMRI data from beginning and end of movie that should not be used.
-        TRs 0-10 are blank, and TRs after 162 are credits, so these are considered the blank TRs.
-        To account for hemodynamic lag, these blank TRs are offset by 2 TRs (4 seconds). 
-        This yields a trimmed data set of TRs 12 - 164
-        Returns an array of bold data with relevant slices removed
-        
-    """
-    trimmed_data = []
-
-    for data in bold_data: 
-        # Remove TRs after 164
-        end_trimmed = np.delete(data, slice(164,168), 1)
-        
-        # Remove TRS 0-12
-        front_trimmed = np.delete(end_trimmed, slice(0,12), 1)
-        
-        trimmed_data.append(front_trimmed)
-        
-    return trimmed_data
-
-def normalize_data(bold_data):
-    """
-        Uses sklearn.preprocessing.StandaradScalar() to normalize data for each subject.
-        Returns an array of normalized bold data
-    """
-    normalized_data = []
-
-    for data in bold_data: 
-        bold_scaler = preprocessing.StandardScaler()
-        bold_scaler.fit(data)
-        normalized_bold = bold_scaler.transform(data)
-        normalized_data.append(normalized_bold)
+    make the nifti mask into a numpy array for masking and trimming
     
+    """
+    
+    # Get the mask data as a numpy array
+    mask_data = mask.get_fdata()
+    print(type(mask_data))
+
+    # Create a boolean mask by checking if each value in the mask is greater than zero
+    bool_mask_data = mask_data.astype('bool')
+
+    # Print the shape and data type of the boolean mask
+    # print('Boolean mask shape:', bool_mask_data.shape)
+    # print('Boolean mask data type:', bool_mask_data.dtype)
+    
+    return bool_mask_data 
+
+
+
+### MASK AND TRIM
+
+def mask_and_trim_data(mask, bold_data):
+
+    """
+        mask and trim the BOLD data
+    """
+    i,j,k = np.where(np.invert(mask))
+    masked_bold_data = []
+    for i_subj, subj_data in enumerate(bold_data):
+        print(i_subj)
+        #change nifti image to numpy array for masking
+        subj_data_array = subj_data.get_fdata()
+    
+        # Remove TRs after 164 (credit)
+        end_trimmed = np.delete(subj_data_array, slice(164,168), 3)
+        # Remove TRS 0-12 (blank screen)
+        front_trimmed = np.delete(end_trimmed, slice(0,12), 3)
+        trimmed_data = front_trimmed 
+    
+        trimmed_data[i,j,k,:] = 0.
+        subj_data_im = nib.Nifti1Image(trimmed_data, affine=subj_data.affine, header=subj_data.header)
+        masked_bold_data.append(subj_data_im)
+        
+    return masked_bold_data 
+
+
+### NORMALIZE DATA
+
+def normalize_bold_data(masked_bold_data):
+    """
+    normalize the bold data
+    """
+    
+    normalized_bold_data = []
+
+    for i_subj, subj_data in enumerate(masked_bold_data):
+    
+        #print subj number
+        print(i_subj)
+    
+        #make subject data in to an array from nifti image
+        subj_data_array = subj_data.get_fdata()
+        #reshape data to 2d in order to use scaler fit() and transform to make the order (TR, Voxels)
+        subj_data_array_2d = subj_data_array.reshape((-1, subj_data_array.shape[-1])).T
+    
+        #do scaler
+        bold_scaler = preprocessing.StandardScaler()
+        bold_scaler.fit(subj_data_array_2d)
+        normalized_bold = bold_scaler.transform(subj_data_array_2d)
+    
+        #reshape it back to 4d
+        subj_data_array_4d = normalized_bold.T.reshape(subj_data_array.shape)
+        print(subj_data_array_4d.shape)
+    
+        #append data
+        normalized_bold_data.append(normalized_bold)
+    
+    return normalized_bold_data
+    
+    
+
+### Combine Function for Masking data with MT and STS 
+
+
+# def mask_trim_normalize(directory, subject_ids, mask):
+#     """
+#         Load nuisance-regressed bold data, apply a mask to it, then trim and normalize it.
+#         Returns masked, trimmed, normalized data.
+#     """
+    
+#     bool_mask = helpers_new.bool_mask_data(mask = mask)
+#     bold_data = helpers_new.load_clean_data(subject_range=subject_ids, directory=directory)
+#     print(type(bold_data[0]))
+#     print(bold_data[0].shape)
+#     masked_bold_data = helpers_new.mask_and_trim_data(mask = bool_mask, bold_data=bold_data)
+#     normalized_data = helpers_new.normalize_bold_data(masked_bold_data = masked_bold_data)
+    
+#     return normalized_data
+
+
+def mask_trim_normalize(directory, subject_ids, mask):
+    """
+        Load nuisance-regressed bold data, apply a mask to it, then trim and normalize it.
+        Returns masked, trimmed, normalized data.
+    """
+    
+    bool_mask = bool_mask_data(mask = mask)
+    print(f'voxels in ISC mask: n = {np.sum(bool_mask)}')
+    bold_data = load_clean_data(subject_range=subject_ids, directory=directory)
+    masked_bold_data = mask_and_trim_data(mask = bool_mask, bold_data=bold_data)
+    print(f'voxels in brain after mask: n = {np.sum(np.mean(masked_bold_data[0].get_fdata(),axis=-1) != 0)}')
+    print('masked_bold_data shape', masked_bold_data[0].shape)
+    normalized_data = normalize_bold_data(masked_bold_data = masked_bold_data)
+
     return normalized_data
+
 
 
   
