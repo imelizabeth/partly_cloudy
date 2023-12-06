@@ -14,4 +14,4 @@ Broadly, there's three types of files:
 
 More specifically, to run the code, you would first want to run the rockfish_scripts folder. The workflow order should be Encoding Analysis & Differences -> Generate Null -> Threshold. After running the encoding analysis and thresholding data, you can run jupyter_notebooks folder. While all of the notebooks have interesting analysis information, the main notebooks we used for the results were figures.ipynb for whole brain analysis and ROI_indv_social_features (individual social feature model prediction), ROI_moten_all_ages (motion energy prediction), and ROI_social_all_ages (social feature combined model prediction).
 
-We also have helper files (ends with .py) that houses the functions we used to run the codes
+We also have helper files (ends with .py) where you can find the functions we used to run the codes
