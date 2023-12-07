@@ -8,9 +8,11 @@ To run ROI analyses, you would also need to download the ROI masks we used: We u
 
 # How to use the code
 Broadly, there's three types of files: 
-1) Folder 'rockfish_scripts' has the codes for bash and python scripts used to run the encoding model, difference analysis between age groups, and thrsholding
-2) Folder 'jupyter_notebooks' has the notebooks we used to visualize the data we analyzed using rockfish_scripts
-3) Notebooks with 'sample' in its name gives you an example of how to use the notebooks
+1) Folder 'data_prep' gives you two files: one needed to prep for the isc masking and feature correlation analysis 
+2) Folder 'rockfish_scripts' has the codes for bash and python scripts used to run the encoding model, difference analysis between age groups, and thrsholding
+3) Folder 'jupyter_notebooks' has the notebooks we used to visualize the data we analyzed using rockfish_scripts
+4) Folder 'demo_sample' gives you example of how to use the notebooks
+
 
 More specifically, to run the code, you would first want to run the rockfish_scripts folder. The workflow order should be Encoding Analysis & Differences -> Generate Null -> Threshold. After running the encoding analysis and thresholding data, you can run jupyter_notebooks folder. While all of the notebooks have interesting analysis information, the main notebooks we used for the results were figures.ipynb for whole brain analysis and ROI_indv_social_features (individual social feature model prediction), ROI_moten_all_ages (motion energy prediction), and ROI_social_all_ages (social feature combined model prediction).
 
