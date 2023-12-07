@@ -8,7 +8,7 @@ To run ROI analyses, you would also need to download the ROI masks we used: We u
 
 # How to use the code
 Broadly, there's three types of files: 
-1) Folder 'data_prep' gives you two files: one needed to prep for the isc masking and feature correlation analysis 
+1) Folder 'data_prep' gives you three files: one needed to prep for the isc masking, and two for feature analysis (feature labeling csv and correlation and PCA calculation notebook)
 2) Folder 'rockfish_scripts' has the codes for bash and python scripts used to run the encoding model, difference analysis between age groups, and thrsholding
 3) Folder 'jupyter_notebooks' has the notebooks we used to visualize the data we analyzed using rockfish_scripts
 4) Folder 'demo_sample' gives you example of how to use the notebooks
